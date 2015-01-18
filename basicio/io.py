@@ -6,7 +6,14 @@ import cStringIO
 from basicio import utils
 
 def loadtable(file ):
+    """
+    Examples
+    --------
+    >>> d = loadtable('example_data/table_data.dat')
+    >>> type(d)
+    np.ndarray
 
+    """
 
     if os.path.isfile(file):
         # print 'This is a filename'
