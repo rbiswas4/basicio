@@ -5,7 +5,7 @@ import os.path
 import cStringIO
 from basicio import utils
 
-def loadtable(file ):
+def loadtable(file, buffer=False ):
     """
     Examples
     --------
@@ -20,6 +20,10 @@ def loadtable(file ):
         fp  = open(file)
     else:
         # print 'this is a string'
+        # Confirm
+        if not buffer:
+            raise ValueError('The file does not exist, and buffer is False,\
+                    so cannot iterpret as data stream')
         fp =  cStringIO.StringIO(file)
 
 
