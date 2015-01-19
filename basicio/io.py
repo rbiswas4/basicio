@@ -8,7 +8,7 @@ import os
 
 _here  = os.path.dirname(os.path.realpath(__file__))
 
-def file2numpyarray(file, buffer=False, datastring=None):
+def file2numpyarray(file, buffer=False, delimitter='', datastring=None):
     """
     load table-like data having consistent columns in a file or string into a
     numpy array of strings
@@ -22,6 +22,8 @@ def file2numpyarray(file, buffer=False, datastring=None):
         path to a file, then buffer must be true
     buffer: optional, bool, defaults to False
         If file is a string rather than the path to a file, this must be true
+    delimitter: string, optional, defaults to ''
+        type of delimitter used in the file
     datastring: string, optional, defaults to `None`
         if not none, assume that all lines containing data are prepended by
         this string; therefore select only such lines, and strip this character
@@ -42,12 +44,18 @@ def file2numpyarray(file, buffer=False, datastring=None):
     >>> # One can access the elements in the usual `numpy.ndarray` way
     >>> d[1, 3]
     '4.6774e-04'
+    >>> print np.shape(d)
+    (96, 27)
     >>> fp = open(fname)
     >>> contents = fp.read()
     >>> fp.close()
     >>> dd = file2numpyarray(contents, buffer=True)
     >>> (d == dd).all()
     True
+    >>> fname = os.path.join(_here,'example_data/table_data_ps.dat')
+    >>> x = file2numpyarray(fname, datastring='SN:')
+    >>> np.shape(x)
+    (2, 27)
 
 
     .. note:: 1. Cofirmation of buffer was introduced in order to prevent \
@@ -55,29 +63,32 @@ def file2numpyarray(file, buffer=False, datastring=None):
             buffer.
 
     """
-
+    # Check if this is a path to a file or a string
     if os.path.isfile(file):
-        # print 'This is a filename'
         fp = open(file)
     else:
-        # print 'this is a string'
-        # Confirm
+        # this is a string, Check if buffer is true
         if not buffer:
             raise ValueError('The file does not exist, and buffer is False,\
-                    so cannot iterpret as data stream')
+                             so cannot iterpret as data stream')
         fp = cStringIO.StringIO(file)
 
     line = fp.readline()
+    line  = line.strip()
     data = []
-    while line != '':
-        if datastring is not None:
-            if not line.startswith(datastring):
-                continue
-        lst = utils.tokenizeline(line)[0]
-        data.append(lst)
-        line = fp.readline()
 
-    fp.close
+    while line != '':
+        if datastring is None:
+            lst = utils.tokenizeline(line, delimitter=delimitter)[0]
+            data.append(lst)
+        elif line.startswith(datastring):
+            lst = utils.tokenizeline(line, delimitter=delimitter,
+                                     prependstring='SN:')[0]
+            data.append(lst)
+        # print 'got here'
+        line = fp.readline()
+        line  = line.strip()
+    fp.close()
     data = np.asarray(data)
     return data
 # r=np.core.records.fromrecords([(456,'dbe',1.2),(2,'de',1.3)],
