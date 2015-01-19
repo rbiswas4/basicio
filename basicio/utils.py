@@ -2,71 +2,82 @@
 
 import numpy as np
 import sys
+# import string
 
-__all__ = ['tokenizeline', 'guesstype', 'guessarraytype'] 
+__all__ = ['tokenizeline', 'guesstype', 'guessarraytype']
 
 
-def tokenizeline (line, delimitter="", ignorestrings="#", format='list'):
+def tokenizeline(line, delimitter="", ignorestrings="#", prependstring=None,
+                 format='list'):
     """
-    splits the string line into two substrings before and after the 
+    splits the string line into two substrings before and after the
     first instance of a string in the list ignorestrings, and returns
-    a tuple of a list/tuple of tokens obtained by tokenizing the first 
+    a tuple of a list/tuple of tokens obtained by tokenizing the first
     substring on the delimiter delimitter and the second substring.
 
     Parameters
     ----------
-    line: mandatory, string 
+    line: mandatory, string
         string to tokenize
     delimitter: optional, defaults to ""
-        string of characters (other than whitespace) to 
-        be used as a delimiter for tokenizing the line. 
+        string of characters (other than whitespace) to
+        be used as a delimiter for tokenizing the line.
         for example  in the case of a line of TSV, it would be "\t"
     ignorestrings: string, optional, defaults to "#"
         string, after which the remainder of the line will be ignored
         in the list of tokens
+    prependstring: string, optional defaults to None
+        if not None, assumes  desired data is prepended by prependstring, and
+        removes this prepended string
     format: string, optional defaults to 'list'
         describes the format of the collection of tokens and can be either
         'list' or 'tuple'
 
     Returns
     -------
-    tuple: (lst, list of metadata) 
+    tuple: (lst, list of metadata)
         lst is a list/tuple of token strings, list of metadata strings
 
 
     Examples
     --------
-
     >>> myline = "KJAHS KH AKJHS jjhJH. JH HJ   JHH JH #tests "
     >>> tokenizeline(myline, delimitter=".")
     (['KJAHS KH AKJHS jjhJH', ' JH HJ   JHH JH'], ['tests'])
-    >>> tokenizeline(myline, delimitter="") 
+    >>> tokenizeline(myline, delimitter="")
+    (['KJAHS', 'KH', 'AKJHS', 'jjhJH.', 'JH', 'HJ', 'JHH', 'JH'], ['tests'])
+    >>> myline = "data KJAHS KH AKJHS jjhJH. JH HJ   JHH JH #tests "
+    >>> tokenizeline(myline, delimitter="", prependstring='data')
     (['KJAHS', 'KH', 'AKJHS', 'jjhJH.', 'JH', 'HJ', 'JHH', 'JH'], ['tests'])
 
 
     .. note::  slightly diff signature from _tokenizeline which seemed to be  \
     too complicated and is done more simply here, as the metadata is captured \
     as a list rather than a comment string.
-    TODO: allow multiple delimiter strings. 
-    """    
+    TODO: allow multiple delimiter strings.
+    """
     line = line.strip()
 
     # Find comments to ignore
     lst = line.split(ignorestrings)
     commentlist = lst[1:]
-    linelst = lst[0].strip()
+    linelst = lst[0]
+    if prependstring is not None:
+        linelst = linelst.lstrip(prependstring)
+    linelst = linelst.strip()
 
     if delimitter == '':
         tokens = linelst.split()
     else:
-        tokens  = linelst.split(delimitter)
+        tokens = linelst.split(delimitter)
     if format == 'tuple':
         tokens = tuple(tokens)
     return (tokens, commentlist)
 
+
 def guesstype(s, makeintfloats=False):
     """
-    guess the datatype (between ints, floats, str) of the object printed 
+    guess the datatype (between ints, floats, str) of the object printed
     as a string and return a tuple of (dtype, data in appropriate dtype)
 
     Parameters
@@ -88,7 +99,7 @@ def guesstype(s, makeintfloats=False):
     Examples
     --------
     >>> s = '123'
-    >>> guesstype(s) 
+    >>> guesstype(s)
     ('i8', 123)
     >>> guesstype(s, makeintfloats=True)
     ('f4', 123.0)
@@ -102,21 +113,21 @@ def guesstype(s, makeintfloats=False):
         if makeintfloats:
             return 'f4', float(s)
         else:
-            return 'i8' , int(s) 
+            return 'i8', int(s)
     except ValueError:
         pass
     try:
         float(s)
-        return 'f4' , float(s) 
+        return 'f4', float(s)
     except ValueError:
         pass
- 
     return "a20", s
 
-def guessarraytype (arr, makeintfloats=False):
+
+def guessarraytype(arr, makeintfloats=False):
     """
     guess the underlying datatype (out of 'i8', 'f4', 'a20') of an iterable
-    of strings. If the iterable contains strings that are guessed to be of 
+    of strings. If the iterable contains strings that are guessed to be of
     different types, the most 'general' type will be returned, where we mean
     ('i8', 'f4', 'a20') are assumed to be in increasing order of generality.
 
@@ -126,7 +137,7 @@ def guessarraytype (arr, makeintfloats=False):
     iterable : mandatory, array-like object of strings
         collection of strings
     makeintfloats: optional, bool, defaults to False
-        If true, assumes that strings that can be integers are actually 
+        If true, assumes that strings that can be integers are actually
         floats, so that strings like '3' are treated as '3.0'
 
 
@@ -153,9 +164,9 @@ def guessarraytype (arr, makeintfloats=False):
     >>> guessarraytype(arr)
     'a20'
     """
-    typearr = np.array(map(lambda x: guesstype(x, 
-                       makeintfloats=makeintfloats)[0], arr)) 
-    if any(typearr  == 'a20'):
+    typearr = np.array(map(lambda x: guesstype(x,
+                       makeintfloats=makeintfloats)[0], arr))
+    if any(typearr == 'a20'):
         return 'a20'
     elif any(typearr == 'f4'):
         return 'f4'
@@ -167,7 +178,7 @@ def guessarraytype (arr, makeintfloats=False):
         sys.exit()
 
 
-def _tokenizeline (line, delimstrings=" ", ignorestrings=["#"]):
+def _tokenizeline(line, delimstrings=" ", ignorestrings=["#"]):
     """
     splits the string line into two substrings before and after the 
     first instance of a string in the list ignorestrings, and returns
@@ -472,13 +483,13 @@ def loadfile2array(fname,
             numtokens = len(tokens)
             if vmode:
                 print "in  line no "+ linenum + numtokens +"tokens were found" 
-        elif any(map(lambda x: currentline.startswith(x),datastrings)):
-#orig            tokens, comments = tokenizeline (currentline, 
-            tokens, comments = tokenizeline (currentline, 
-                    ignorestrings = ignorestrings, 
-                    delimstrings = datadelims)
+        elif any(map(lambda x: currentline.startswith(x), datastrings)):
+            # orig            tokens, comments = tokenizeline (currentline,
+            tokens, comments = tokenizeline(currentline,
+                                            ignorestrings=ignorestrings,
+                                            delimstrings=datadelims)
             if vmode:
-                print "current line ", currentline + " tokenized to ", tokens  
+                print "current line ", currentline + " tokenized to ", tokens
             newtoken = True
             numtokens = len(tokens)
         else:
@@ -487,74 +498,68 @@ def loadfile2array(fname,
             if numelems == 0:
                 numelems = numtokens
             if numelems != numtokens:
-                return ([], [] ,1 )    
+                return ([], [], 1)
 
         if newtoken:
             if vmode:
-                print  "new tokens found of length" , len(tokens)
-                print "These tokens are " , tokens
-            if len(tokens)>0:
+                print "new tokens found of length", len(tokens)
+                print "These tokens are ", tokens
+            if len(tokens) > 0:
                 mylist.append(tokens)
-        #line = f.readline()
-        #print line , "\n", tokens
+        # line = f.readline()
+        # print line , "\n", tokens
         if verbose:
             print "mylist now of length ", len(mylist)
-            print "mylist = " ,mylist
+            print "mylist = ", mylist
 
     f.close()
 
     if vmode:
         print "printing mylist[0]"
         print mylist[0]
-    cutlist =[]
+    cutlist = []
     dictlist = []
     coldict = {}
 
-        ###Choose Columns for list
+    # ##Choose Columns for list
     if len(ignorecols) > 0:
         usecols = [i for i in range(len(mylist[0])) if i not in ignorecols]
-    
     if vmode:
         print len(mylist[0])
         print len(usecols)
     cutlistiter = 0
-    if (len(usecols) < len(mylist[0])) and (len(usecols)!=0):
+    if (len(usecols) < len(mylist[0])) and (len(usecols) != 0):
         for row in mylist:
             cutrow = [row[i] for i in range(len(row)) if i in usecols]
             cutlist.append(cutrow)
-            #print usecoldicts
+            # print usecoldicts
             if len(usecoldicts) > 0:
                 dictrow = [row[i] for i in range(len(row)) if i in usecoldicts]
                 dictlist.append(dictrow)
                 coldict[dictrow[0]] = cutlistiter
-                
-            cutlistiter +=1
+
+            cutlistiter += 1
     else:
         cutlist = mylist
-    
-        
-        ### Assuming things can be turned into floats
+        # ## Assuming things can be turned into floats
     if converttofloat:
-        ### Check the data types of 1st row
-        types = getdatatypes(cutlist, keys = keys,makeintfloats =makeintfloats)
-            
-        #print types
-        #print cutlist
-        #print len(cutlist)
-        cutarray = np.zeros(len(cutlist),dtype=types)
-        #print len(cutarray)
+        # # Check the data types of 1st row
+        types = getdatatypes(cutlist, keys=keys, makeintfloats=makeintfloats)
+        # print types
+        # print cutlist
+        # print len(cutlist)
+        cutarray = np.zeros(len(cutlist), dtype=types)
+        # print len(cutarray)
         for i in range(len(cutlist)):
-            #map(float, cutlist[i])
-            #cutarray[i] = np.array(map(float,cutlist[i]))
-            #print len(cutlist)
+            # map(float, cutlist[i])
+            # cutarray[i] = np.array(map(float,cutlist[i]))
+            # print len(cutlist)
             cutarray[i] = tuple(cutlist[i])
-            #print i, len(cutlist[i]), len(cutarray[i])
-            #print cutlist[i]
-            #print cutarray[i] 
-        #print "length of array ", len(cutarray)
-        #return (cutarray ,dictlist , 0 )
-        return (cutarray ,coldict , 0 )
-        
-    #return (cutlist , dictlist , 0 )
-    return (cutlist , coldict , 0 )
-
+            # print i, len(cutlist[i]), len(cutarray[i])
+            # print cutlist[i]
+            # print cutarray[i]
+        # print "length of array ", len(cutarray)
+        # return (cutarray ,dictlist , 0 )
+        return (cutarray, coldict, 0)
+    # return (cutlist , dictlist , 0 )
+    return (cutlist, coldict, 0)
