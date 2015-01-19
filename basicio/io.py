@@ -8,7 +8,7 @@ import os
 
 _here  = os.path.dirname(os.path.realpath(__file__))
 
-def file2numpyarray(file, buffer=False, delimitter='', datastring=None):
+def file2strarray(file, buffer=False, delimitter='', datastring=None):
     """
     load table-like data having consistent columns in a file or string into a
     numpy array of strings
@@ -38,7 +38,7 @@ def file2numpyarray(file, buffer=False, delimitter='', datastring=None):
     Examples
     --------
     >>> fname = os.path.join(_here,'example_data/table_data.dat')
-    >>> d = file2numpyarray(fname)
+    >>> d = file2strarray(fname)
     >>> type(d)
     <type 'numpy.ndarray'>
     >>> # One can access the elements in the usual `numpy.ndarray` way
@@ -49,11 +49,11 @@ def file2numpyarray(file, buffer=False, delimitter='', datastring=None):
     >>> fp = open(fname)
     >>> contents = fp.read()
     >>> fp.close()
-    >>> dd = file2numpyarray(contents, buffer=True)
+    >>> dd = file2strarray(contents, buffer=True)
     >>> (d == dd).all()
     True
     >>> fname = os.path.join(_here,'example_data/table_data_ps.dat')
-    >>> x = file2numpyarray(fname, datastring='SN:')
+    >>> x = file2strarray(fname, datastring='SN:')
     >>> np.shape(x)
     (2, 27)
 
@@ -92,7 +92,8 @@ def file2numpyarray(file, buffer=False, delimitter='', datastring=None):
     data = np.asarray(data)
     return data
     
-def arraydtypes(stringarray, names=None, titles=None, returndtype=True):
+def arraydtypes(stringarray, names=None, titles=None, types=None,
+                returndtype=True):
     """
     returns a list of types of columns in a 2D array of strings
     Parameters
@@ -109,7 +110,7 @@ def arraydtypes(stringarray, names=None, titles=None, returndtype=True):
     Examples
     --------
     >>> fname = os.path.join(_here,'example_data/table_data.dat')
-    >>> d = file2numpyarray(fname)
+    >>> d = file2strarray(fname)
     >>> types = arraydtypes(d, returndtype=False)
     >>> types[0]
     'a20'
@@ -121,13 +122,19 @@ def arraydtypes(stringarray, names=None, titles=None, returndtype=True):
     'i8'
     >>> arraydtypes(d)
     dtype([('f0', 'S20'), ('f1', '<f4'), ('f2', '<f4'), ('f3', '<f4'), ('f4', '<f4'), ('f5', '<f4'), ('f6', '<f4'), ('f7', '<f4'), ('f8', '<f4'), ('f9', '<f4'), ('f10', '<f4'), ('f11', '<f4'), ('f12', '<f4'), ('f13', '<f4'), ('f14', '<f4'), ('f15', '<f4'), ('f16', '<f4'), ('f17', '<i8'), ('f18', '<f4'), ('f19', '<f4'), ('f20', '<f4'), ('f21', '<f4'), ('f22', '<i8'), ('f23', '<i8'), ('f24', '<f4'), ('f25', '<f4'), ('f26', '<f4')])
+
+
+    .. note:: If we just want to obtain dtype from types, we only need to use\
+    np.format_parser(formats=types, names=names, titles=titles).dtype
     """
 
-    numrows, numcols = np.shape(stringarray)
-    types = [] 
-    for i in range(numcols):
-        t = utils.guessarraytype(stringarray[:, i])
-        types.append(t)
+    # If types is None, find types 
+    if types is None:
+        numrows, numcols = np.shape(stringarray)
+        types = [] 
+        for i in range(numcols):
+            t = utils.guessarraytype(stringarray[:, i])
+            types.append(t)
 
     if returndtype:
         dt = np.format_parser(formats=types, names=names, titles=titles).dtype
@@ -135,7 +142,7 @@ def arraydtypes(stringarray, names=None, titles=None, returndtype=True):
     else:
         return types
 
-def stringarray2typedarray(stringarray, names=None, types=None):
+def strarray2recarray(stringarray, names=None, types=None, titles=None):
     """
     Parameters
     ----------
@@ -148,13 +155,47 @@ def stringarray2typedarray(stringarray, names=None, types=None):
     Returns
     -------
 
+
     Examples
     --------
+    >>> fname = os.path.join(_here,'example_data/table_data.dat')
+    >>> d = file2strarray(fname)
+    >>> arrdtypes = arraydtypes(d)
+
     """
     numrows, numcols = np.shape(stringarray)
 
+    arrdtypes = arraydtypes(stringarray, names=names, titles=titles, types=types,
+                        returndtype=True)
+
+    # t = arrdtypes.dtype
+
+    cols = []
     for i in range(numcols):
-        pass
-    return 0
+        t = np.array(stringarray[:, i], dtype=arrdtypes[i])
+        cols.append(t)
+
+    # Create tuple
+    recs = zip(*cols)
+    a = np.array(recs, dtype=arrdtypes)
+    return a
+if __name__ == '__main__':
+
+    fname = os.path.join(_here,'example_data/table_data.dat')
+    d = file2strarray(fname)
+    arrdtypes = arraydtypes(d)
+    x = strarray2recarray(d)
+    print x.dtype
+    #print type(arrdtypes)
+    #print type(x)
+    #print len(x)
+    #print map(len, x)
+    #print len(arrdtypes)
+    #print x[0]
+    #y = np.array(x, dtype=arrdtypes)
+    #print y.dtype
+    # print type(y)
+#     import astropy
+#    print Table(y)
 # r=np.core.records.fromrecords([(456,'dbe',1.2),(2,'de',1.3)],
 #          ... names='col1,col2,col3')
