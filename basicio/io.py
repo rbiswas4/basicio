@@ -92,7 +92,7 @@ def file2numpyarray(file, buffer=False, delimitter='', datastring=None):
     data = np.asarray(data)
     return data
     
-def typesoffields(stringarray):
+def arraydtypes(stringarray, names=None, titles=None, returndtype=True):
     """
     returns a list of types of columns in a 2D array of strings
     Parameters
@@ -110,7 +110,7 @@ def typesoffields(stringarray):
     --------
     >>> fname = os.path.join(_here,'example_data/table_data.dat')
     >>> d = file2numpyarray(fname)
-    >>> types = typesoffields(d)
+    >>> types = arraydtypes(d, returndtype=False)
     >>> types[0]
     'a20'
     >>> types[1]
@@ -119,6 +119,8 @@ def typesoffields(stringarray):
     'f4'
     >>> types[-4]
     'i8'
+    >>> arraydtypes(d)
+    dtype([('f0', 'S20'), ('f1', '<f4'), ('f2', '<f4'), ('f3', '<f4'), ('f4', '<f4'), ('f5', '<f4'), ('f6', '<f4'), ('f7', '<f4'), ('f8', '<f4'), ('f9', '<f4'), ('f10', '<f4'), ('f11', '<f4'), ('f12', '<f4'), ('f13', '<f4'), ('f14', '<f4'), ('f15', '<f4'), ('f16', '<f4'), ('f17', '<i8'), ('f18', '<f4'), ('f19', '<f4'), ('f20', '<f4'), ('f21', '<f4'), ('f22', '<i8'), ('f23', '<i8'), ('f24', '<f4'), ('f25', '<f4'), ('f26', '<f4')])
     """
 
     numrows, numcols = np.shape(stringarray)
@@ -127,15 +129,30 @@ def typesoffields(stringarray):
         t = utils.guessarraytype(stringarray[:, i])
         types.append(t)
 
-    return types
+    if returndtype:
+        dt = np.format_parser(formats=types, names=names, titles=titles).dtype
+        return dt
+    else:
+        return types
 
-def stringarray2typedarray(stringarray):
+def stringarray2typedarray(stringarray, names=None, types=None):
     """
+    Parameters
+    ----------
     stringarray2typedarray converts a 2D array of strings into a structured
-    array where the datatypes are guessed
-    """
+    array. The datatypes may be guessed or supplied, and similarly names will
+    be assigned as a prefix prepended to the column number starting from 0, 
+    unless the names argument has been supplied.
 
+
+    Returns
+    -------
+
+    Examples
+    --------
+    """
     numrows, numcols = np.shape(stringarray)
+
     for i in range(numcols):
         pass
     return 0
