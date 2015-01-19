@@ -144,16 +144,27 @@ def arraydtypes(stringarray, names=None, titles=None, types=None,
 
 def strarray2recarray(stringarray, names=None, types=None, titles=None):
     """
-    Parameters
-    ----------
     stringarray2typedarray converts a 2D array of strings into a structured
     array. The datatypes may be guessed or supplied, and similarly names will
     be assigned as a prefix prepended to the column number starting from 0, 
     unless the names argument has been supplied.
+    
+
+    Parameters
+    ----------
+    stringarray: 2D `np.ndarray` of strings, mandatory
+        input data
+    names: list of strings, optional, defaults to `None`
+        list of names of fields corresponding to stringarray
+    types: list of variable types, optional, defaults to `None`
+        types of variables corresponding to fields or columns of stringarray
+    titles: list of strings, optional, defaults to `None`
+        alias for names of fields, as required by `np.format_parser`
 
 
     Returns
     -------
+    `np.recarray` or structured array
 
 
     Examples
@@ -161,14 +172,23 @@ def strarray2recarray(stringarray, names=None, types=None, titles=None):
     >>> fname = os.path.join(_here,'example_data/table_data.dat')
     >>> d = file2strarray(fname)
     >>> arrdtypes = arraydtypes(d)
+    >>> x = strarray2recarray(d)
+    >>> x.dtype == arrdtypes
+    True
+    >>> len(d) == len(x['f0'])
+    True
+    >>> x['f0'][0] == '6773'
+    True
+    >>> np.testing.assert_almost_equal(x['f1'][0], 0.089300)
 
+
+    .. note:: names can be changed as long as all the fields are changed \
+    simultaneously through `res.dtype.names = newnames`
     """
     numrows, numcols = np.shape(stringarray)
 
-    arrdtypes = arraydtypes(stringarray, names=names, titles=titles, types=types,
-                        returndtype=True)
-
-    # t = arrdtypes.dtype
+    arrdtypes = arraydtypes(stringarray, names=names, titles=titles,
+                            types=types, returndtype=True)
 
     cols = []
     for i in range(numcols):
@@ -179,23 +199,11 @@ def strarray2recarray(stringarray, names=None, types=None, titles=None):
     recs = zip(*cols)
     a = np.array(recs, dtype=arrdtypes)
     return a
-if __name__ == '__main__':
 
-    fname = os.path.join(_here,'example_data/table_data.dat')
-    d = file2strarray(fname)
-    arrdtypes = arraydtypes(d)
-    x = strarray2recarray(d)
-    print x.dtype
-    #print type(arrdtypes)
-    #print type(x)
-    #print len(x)
-    #print map(len, x)
-    #print len(arrdtypes)
-    #print x[0]
-    #y = np.array(x, dtype=arrdtypes)
-    #print y.dtype
-    # print type(y)
-#     import astropy
-#    print Table(y)
-# r=np.core.records.fromrecords([(456,'dbe',1.2),(2,'de',1.3)],
-#          ... names='col1,col2,col3')
+if __name__ == '__main__':
+    pass
+    # fname = os.path.join(_here,'example_data/table_data.dat')
+    # d = file2strarray(fname)
+    # arrdtypes = arraydtypes(d)
+    # x = strarray2recarray(d)
+    # print x.dtype
