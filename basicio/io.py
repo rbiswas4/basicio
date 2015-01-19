@@ -38,7 +38,16 @@ def file2numpyarray(file, buffer=False, datastring=None):
     >>> fname = os.path.join(_here,'example_data/table_data.dat')
     >>> d = file2numpyarray(fname)
     >>> type(d)
-    np.ndarray
+    <type 'numpy.ndarray'>
+    >>> # One can access the elements in the usual `numpy.ndarray` way
+    >>> d[1, 3]
+    '4.6774e-04'
+    >>> fp = open(fname)
+    >>> contents = fp.read()
+    >>> fp.close()
+    >>> dd = file2numpyarray(contents, buffer=True)
+    >>> (d == dd).all()
+    True
 
 
     .. note:: 1. Cofirmation of buffer was introduced in order to prevent \
