@@ -9,6 +9,7 @@ import os
 
 _here = os.path.dirname(os.path.realpath(__file__))
 
+__all__ = ['file2recarray', 'strarray2recarray', 'file2strarray', 'getheaders', 'arraydtypes'] 
 
 def file2strarray(file, buffer=False, delimitter='', datastring=None):
     """
