@@ -4,7 +4,9 @@ import numpy as np
 import os.path
 import cStringIO
 from basicio import utils
+import os
 
+_here  = os.path.dirname(os.path.realpath(__file__))
 
 def file2numpyarray(file, buffer=False, datastring=None):
     """
@@ -33,7 +35,8 @@ def file2numpyarray(file, buffer=False, datastring=None):
 
     Examples
     --------
-    >>> d = loadtable('example_data/table_data.dat')
+    >>> fname = os.path.join(_here,'example_data/table_data.dat')
+    >>> d = file2numpyarray(fname)
     >>> type(d)
     np.ndarray
 
