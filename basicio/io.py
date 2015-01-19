@@ -3,6 +3,7 @@
 import numpy as np
 import os.path
 import cStringIO
+import string
 from basicio import utils
 import os
 
@@ -37,7 +38,7 @@ def file2strarray(file, buffer=False, delimitter='', datastring=None):
 
     Examples
     --------
-    >>> fname = os.path.join(_here,'example_data/table_data.dat')
+    >>> fname = os.path.join(_here, 'example_data/table_data.dat')
     >>> d = file2strarray(fname)
     >>> type(d)
     <type 'numpy.ndarray'>
@@ -96,6 +97,8 @@ def arraydtypes(stringarray, names=None, titles=None, types=None,
                 returndtype=True):
     """
     returns a list of types of columns in a 2D array of strings
+
+
     Parameters
     ----------
     stringarray: 2D array of strings, mandatory
@@ -200,7 +203,99 @@ def strarray2recarray(stringarray, names=None, types=None, titles=None):
     a = np.array(recs, dtype=arrdtypes)
     return a
 
+def _validatevarlist(names, lst ):
+    """
+    Ensure that two lists are equal or raise errors, wrapper for more stuff
+    """
+
+    if lst != names:
+        raise ValueError('The single header file has multiple headers, which\
+                are inconsistent')
+
+def getheaders(fname, headerstring, ignorestring=None, singleheader=True, 
+               exitonfind=False, delimiter=None):
+    """
+    get the headers or variables names from a file when they are either all on
+    the same line preceeded by headerstring (singleheader case), or on multiple
+    lines starting with the same headerstring, with one or more per line
+
+
+    Parameters
+    ---------
+    fname: string, mandatory
+        absoulte path to file
+    headerstring: string, mandatory
+        string at the beginning (or after leading whitespace) in line containing
+        variable names
+    ignorestring: string, optional, defaults to `None`
+        characters after ignorestring are ignored
+    singleheader: bool, optional, defaults to True
+        if the variable names in a single line or not
+    exitonfind: bool, optional, defaults to False
+        if True, for a singleheader file, the function exits after reading a
+        header to speed up operations in case of a long file
+    delimiter: string, optional defaults to `None`
+        string which separates variable names in the headers, None implies any
+        whitespace character resulting in the use of `split()`
+
+    Returns
+    -------
+    List of strings, each string being the name of a variable
+
+    Examples
+    --------
+    >>> fname = os.path.join(_here, 'example_data/singleheader_data.dat') 
+    >>> getheaders(fname, headerstring='#') 
+    ['SNID', 'z', 'mu']
+    >>> fname = os.path.join(_here, 'example_data/singleheader_concatdata.dat') 
+    >>> getheaders(fname, headerstring='#') 
+    ['SNID', 'z', 'mu']
+    >>> fname = os.path.join(_here, 'example_data/singleheader_inconsdata.dat') 
+    >>> fname = os.path.join(_here, 'example_data/multiheader_data.dat') 
+    >>> getheaders(fname, headerstring='@', singleheader=False) 
+    ['SNID', 'z', 'mu']
+
+
+    .. note:: raises ValueError if argument singleheader is true, exitonfind\
+    is False, and multiple headers with inconsistent variable names are found.
+    """
+    names = []
+    with open(fname) as fp:
+        for line in fp:
+
+            # In case there is a leading whitespace
+            line = line.strip()
+
+            if line.startswith(headerstring):
+                line = line.lstrip(headerstring)
+                if ignorestring is not None:
+                    line = line.split(ignorestring)[0]
+                line = line.strip()
+
+                # split the line in variable names
+                if delimiter is not None:
+                    varlist = line.split(delimiter) 
+                else:
+                    varlist = line.split()
+    
+                # Should we add this to names? 
+                if len(names) == 0 or not singleheader:
+                    # situation: empty names or multi-header
+                    # keep adding
+                    names += varlist
+                elif singleheader and len(names) > 0:
+                    # situation: not multiheader, and names filled
+
+                    # Should we exit ?
+                    if exitonfind:
+                        return names
+
+                    # No? Then check that new header is consistent
+                    _validatevarlist(names, varlist)
+    
+    return names
 def file2recarray(file, types=None, names=None, titles=None, delimiter='',
+                  headerstring=None, ignorestring=None, skiplines=0,
                   datastring=None, buffer=False):
     """
     creates a `numpy.recarray` from a file or buffer of consistent tabular data
@@ -221,8 +316,11 @@ def file2recarray(file, types=None, names=None, titles=None, delimiter='',
         if not none, assume that all lines containing data are prepended by
         this string; therefore select only such lines, and strip this character
         off.
-    stringarray: 2D `np.ndarray` of strings, mandatory
-        input data
+    headerstring: string, optional, defaults to `None`
+        string to denote lines containing variable names which will be used to
+        name fields
+    ignorestring: string, optional, defaults to `None`
+        if not `None`, lines starting with this string will be ignored
     names: list of strings, optional, defaults to `None`
         list of names of fields corresponding to stringarray
     types: list of variable types, optional, defaults to `None`
