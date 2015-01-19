@@ -48,6 +48,8 @@ coverage.xml
 
 # Django stuff:
 *.log
+# vim stuff
+*.swp
 
 # Sphinx documentation
 doc/_build/
