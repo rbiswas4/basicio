@@ -91,5 +91,13 @@ def file2numpyarray(file, buffer=False, delimitter='', datastring=None):
     fp.close()
     data = np.asarray(data)
     return data
+    
+
+def stringarray2typedarray(stringarray):
+    """
+    stringarray2typedarray converts a 2D array of strings into a structured
+    array where the datatypes are guessed
+    """
+    return 0
 # r=np.core.records.fromrecords([(456,'dbe',1.2),(2,'de',1.3)],
 #          ... names='col1,col2,col3')
