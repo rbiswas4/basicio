@@ -200,6 +200,54 @@ def strarray2recarray(stringarray, names=None, types=None, titles=None):
     a = np.array(recs, dtype=arrdtypes)
     return a
 
+def file2recarray(file, types=None, names=None, titles=None, delimiter='',
+                  datastring=None, buffer=False):
+    """
+    creates a `numpy.recarray` from a file or buffer of consistent tabular data
+    of heterogeneous types, by guessing the datatypes.
+
+
+    Parameters
+    ----------
+    file: string, mandatory
+        absolute path to file containing the data, or a string containing the
+        data (with rows separated by new line characters). If file is not the
+        path to a file, then buffer must be true
+    buffer: optional, bool, defaults to False
+        If file is a string rather than the path to a file, this must be true
+    delimitter: string, optional, defaults to ''
+        type of delimitter used in the file
+    datastring: string, optional, defaults to `None`
+        if not none, assume that all lines containing data are prepended by
+        this string; therefore select only such lines, and strip this character
+        off.
+    stringarray: 2D `np.ndarray` of strings, mandatory
+        input data
+    names: list of strings, optional, defaults to `None`
+        list of names of fields corresponding to stringarray
+    types: list of variable types, optional, defaults to `None`
+        types of variables corresponding to fields or columns of stringarray
+    titles: list of strings, optional, defaults to `None`
+        alias for names of fields, as required by `np.format_parser`
+
+
+    Returns
+    -------
+    `np.recarray` or structured array
+
+    Examples
+    --------
+    >>> fname = os.path.join(_here,'example_data/table_data.dat')
+    >>> x = file2recarray(fname)
+    >>> x['f0'][0] == '6773'
+    True
+    >>> np.testing.assert_almost_equal(x['f1'][0], 0.089300)
+
+    """
+    d = file2strarray(file, buffer=buffer, delimitter=delimiter,
+                  datastring=datastring)
+    recarray = strarray2recarray(d, names=names, types=types, titles=titles)
+    return recarray
 if __name__ == '__main__':
     pass
     # fname = os.path.join(_here,'example_data/table_data.dat')
