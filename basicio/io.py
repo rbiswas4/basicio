@@ -7,7 +7,8 @@ import string
 from basicio import utils
 import os
 
-_here  = os.path.dirname(os.path.realpath(__file__))
+_here = os.path.dirname(os.path.realpath(__file__))
+
 
 def file2strarray(file, buffer=False, delimitter='', datastring=None):
     """
@@ -75,7 +76,7 @@ def file2strarray(file, buffer=False, delimitter='', datastring=None):
         fp = cStringIO.StringIO(file)
 
     line = fp.readline()
-    line  = line.strip()
+    line = line.strip()
     data = []
 
     while line != '':
@@ -88,11 +89,12 @@ def file2strarray(file, buffer=False, delimitter='', datastring=None):
             data.append(lst)
 
         line = fp.readline()
-        line  = line.strip()
+        line = line.strip()
     fp.close()
     data = np.asarray(data)
     return data
-    
+
+
 def arraydtypes(stringarray, names=None, titles=None, types=None,
                 returndtype=True):
     """
@@ -102,14 +104,14 @@ def arraydtypes(stringarray, names=None, titles=None, types=None,
     Parameters
     ----------
     stringarray: 2D array of strings, mandatory
-        input array 
-    
+        input array
+
 
     Returns
     -------
     list of types
 
-    
+
     Examples
     --------
     >>> fname = os.path.join(_here,'example_data/table_data.dat')
@@ -131,10 +133,10 @@ def arraydtypes(stringarray, names=None, titles=None, types=None,
     np.format_parser(formats=types, names=names, titles=titles).dtype
     """
 
-    # If types is None, find types 
+    # If types is None, find types
     if types is None:
         numrows, numcols = np.shape(stringarray)
-        types = [] 
+        types = []
         for i in range(numcols):
             t = utils.guessarraytype(stringarray[:, i])
             types.append(t)
@@ -145,13 +147,14 @@ def arraydtypes(stringarray, names=None, titles=None, types=None,
     else:
         return types
 
+
 def strarray2recarray(stringarray, names=None, types=None, titles=None):
     """
     stringarray2typedarray converts a 2D array of strings into a structured
     array. The datatypes may be guessed or supplied, and similarly names will
-    be assigned as a prefix prepended to the column number starting from 0, 
+    be assigned as a prefix prepended to the column number starting from 0,
     unless the names argument has been supplied.
-    
+
 
     Parameters
     ----------
@@ -203,7 +206,8 @@ def strarray2recarray(stringarray, names=None, types=None, titles=None):
     a = np.array(recs, dtype=arrdtypes)
     return a
 
-def _validatevarlist(names, lst ):
+
+def _validatevarlist(names, lst):
     """
     Ensure that two lists are equal or raise errors, wrapper for more stuff
     """
@@ -212,7 +216,8 @@ def _validatevarlist(names, lst ):
         raise ValueError('The single header file has multiple headers, which\
                 are inconsistent')
 
-def getheaders(fname, headerstring, ignorestring=None, singleheader=True, 
+
+def getheaders(fname, headerstring, ignorestring=None, singleheader=True,
                exitonfind=False, delimiter=None):
     """
     get the headers or variables names from a file when they are either all on
@@ -225,8 +230,8 @@ def getheaders(fname, headerstring, ignorestring=None, singleheader=True,
     fname: string, mandatory
         absoulte path to file
     headerstring: string, mandatory
-        string at the beginning (or after leading whitespace) in line containing
-        variable names
+        string at the beginning (or after leading whitespace) in line
+        containing variable names
     ignorestring: string, optional, defaults to `None`
         characters after ignorestring are ignored
     singleheader: bool, optional, defaults to True
@@ -244,15 +249,15 @@ def getheaders(fname, headerstring, ignorestring=None, singleheader=True,
 
     Examples
     --------
-    >>> fname = os.path.join(_here, 'example_data/singleheader_data.dat') 
-    >>> getheaders(fname, headerstring='#') 
+    >>> fname = os.path.join(_here, 'example_data/singleheader_data.dat')
+    >>> getheaders(fname, headerstring='#')
     ['SNID', 'z', 'mu']
-    >>> fname = os.path.join(_here, 'example_data/singleheader_concatdata.dat') 
-    >>> getheaders(fname, headerstring='#') 
+    >>> fname = os.path.join(_here, 'example_data/singleheader_concatdata.dat')
+    >>> getheaders(fname, headerstring='#')
     ['SNID', 'z', 'mu']
-    >>> fname = os.path.join(_here, 'example_data/singleheader_inconsdata.dat') 
-    >>> fname = os.path.join(_here, 'example_data/multiheader_data.dat') 
-    >>> getheaders(fname, headerstring='@', singleheader=False) 
+    >>> fname = os.path.join(_here, 'example_data/singleheader_inconsdata.dat')
+    >>> fname = os.path.join(_here, 'example_data/multiheader_data.dat')
+    >>> getheaders(fname, headerstring='@', singleheader=False)
     ['SNID', 'z', 'mu']
 
 
@@ -274,11 +279,11 @@ def getheaders(fname, headerstring, ignorestring=None, singleheader=True,
 
                 # split the line in variable names
                 if delimiter is not None:
-                    varlist = line.split(delimiter) 
+                    varlist = line.split(delimiter)
                 else:
                     varlist = line.split()
-    
-                # Should we add this to names? 
+
+                # Should we add this to names?
                 if len(names) == 0 or not singleheader:
                     # situation: empty names or multi-header
                     # keep adding
@@ -292,8 +297,10 @@ def getheaders(fname, headerstring, ignorestring=None, singleheader=True,
 
                     # No? Then check that new header is consistent
                     _validatevarlist(names, varlist)
-    
+
     return names
+
+
 def file2recarray(file, types=None, names=None, titles=None, delimiter='',
                   headerstring=None, ignorestring=None, skiplines=0,
                   datastring=None, buffer=False):
@@ -343,7 +350,7 @@ def file2recarray(file, types=None, names=None, titles=None, delimiter='',
 
     """
     d = file2strarray(file, buffer=buffer, delimitter=delimiter,
-                  datastring=datastring)
+                      datastring=datastring)
     recarray = strarray2recarray(d, names=names, types=types, titles=titles)
     return recarray
 if __name__ == '__main__':
