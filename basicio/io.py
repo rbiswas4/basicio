@@ -85,19 +85,59 @@ def file2numpyarray(file, buffer=False, delimitter='', datastring=None):
             lst = utils.tokenizeline(line, delimitter=delimitter,
                                      prependstring='SN:')[0]
             data.append(lst)
-        # print 'got here'
+
         line = fp.readline()
         line  = line.strip()
     fp.close()
     data = np.asarray(data)
     return data
     
+def typesoffields(stringarray):
+    """
+    returns a list of types of columns in a 2D array of strings
+    Parameters
+    ----------
+    stringarray: 2D array of strings, mandatory
+        input array 
+    
+
+    Returns
+    -------
+    list of types
+
+    
+    Examples
+    --------
+    >>> fname = os.path.join(_here,'example_data/table_data.dat')
+    >>> d = file2numpyarray(fname)
+    >>> types = typesoffields(d)
+    >>> types[0]
+    'a20'
+    >>> types[1]
+    'f4'
+    >>> types[2]
+    'f4'
+    >>> types[-4]
+    'i8'
+    """
+
+    numrows, numcols = np.shape(stringarray)
+    types = [] 
+    for i in range(numcols):
+        t = utils.guessarraytype(stringarray[:, i])
+        types.append(t)
+
+    return types
 
 def stringarray2typedarray(stringarray):
     """
     stringarray2typedarray converts a 2D array of strings into a structured
     array where the datatypes are guessed
     """
+
+    numrows, numcols = np.shape(stringarray)
+    for i in range(numcols):
+        pass
     return 0
 # r=np.core.records.fromrecords([(456,'dbe',1.2),(2,'de',1.3)],
 #          ... names='col1,col2,col3')

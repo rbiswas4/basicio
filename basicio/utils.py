@@ -107,6 +107,8 @@ def guesstype(s, makeintfloats=False):
     ('f4', 12.3)
     >>> guesstype('s23')
     ('a20', 's23')
+
+    .. note:: We cannot use s.__class__ as we are starting from a string
     """
     try:
         int(s)
