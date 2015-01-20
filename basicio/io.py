@@ -86,17 +86,21 @@ def file2strarray(file, buffer=False, delimitter='', datastring=None,
     # while line != '':
     for i, line in enumerate(fp):
         line = line.strip()
+        # probably can get rid of the not line case as it will be trapped by else
         if not line:
             continue
         if datastring is None:
             lst = utils.tokenizeline(line, delimitter=delimitter)[0]
-            data.append(lst)
+            # data.append(lst)
         elif line.startswith(datastring):
             # print 'line ', line
             lst = utils.tokenizeline(line, delimitter=delimitter,
                                      prependstring=datastring,
                                      ignorestrings=ignorestring)[0]
+        else:
+            pass
             # print 'lst ', lst
+        if len(lst) > 0:
             data.append(lst)
     fp.close()
     data = np.asarray(data)
