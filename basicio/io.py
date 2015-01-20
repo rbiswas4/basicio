@@ -5,13 +5,14 @@ import os.path
 import cStringIO
 import string
 from basicio import utils
-import os
+import os, sys
 
 _here = os.path.dirname(os.path.realpath(__file__))
 
 __all__ = ['file2recarray', 'strarray2recarray', 'file2strarray', 'getheaders', 'arraydtypes'] 
 
-def file2strarray(file, buffer=False, delimitter='', datastring=None):
+def file2strarray(file, buffer=False, delimitter='', datastring=None,
+                  ignorestring=None):
     """
     load table-like data having consistent columns in a file or string into a
     numpy array of strings
@@ -31,6 +32,8 @@ def file2strarray(file, buffer=False, delimitter='', datastring=None):
         if not none, assume that all lines containing data are prepended by
         this string; therefore select only such lines, and strip this character
         off.
+    ignorestring: string, optional, defaults to `None` 
+        string after which any line is ignored
 
 
     Returns
@@ -76,21 +79,25 @@ def file2strarray(file, buffer=False, delimitter='', datastring=None):
                              so cannot iterpret as data stream')
         fp = cStringIO.StringIO(file)
 
-    line = fp.readline()
-    line = line.strip()
+    # line = fp.readline()
+    # line = line.strip()
     data = []
 
-    while line != '':
+    # while line != '':
+    for i, line in enumerate(fp):
+        line = line.strip()
+        if not line:
+            continue
         if datastring is None:
             lst = utils.tokenizeline(line, delimitter=delimitter)[0]
             data.append(lst)
         elif line.startswith(datastring):
+            # print 'line ', line
             lst = utils.tokenizeline(line, delimitter=delimitter,
-                                     prependstring='SN:')[0]
+                                     prependstring=datastring,
+                                     ignorestrings=ignorestring)[0]
+            # print 'lst ', lst
             data.append(lst)
-
-        line = fp.readline()
-        line = line.strip()
     fp.close()
     data = np.asarray(data)
     return data

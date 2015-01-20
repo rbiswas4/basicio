@@ -56,20 +56,25 @@ def tokenizeline(line, delimitter="", ignorestrings="#", prependstring=None,
     as a list rather than a comment string.
     TODO: allow multiple delimiter strings.
     """
-    line = line.strip()
+    dataline = line.strip()
 
     # Find comments to ignore
-    lst = line.split(ignorestrings)
-    commentlist = lst[1:]
-    linelst = lst[0]
+    commentlist = []
+    if ignorestrings is not None:
+        lst = dataline.split(ignorestrings)
+        commentlist = lst[1:]
+        dataline = lst[0]
+    # print 'ignorestrings ', ignorestrings
+    # print 'linelst ', dataline
     if prependstring is not None:
-        linelst = linelst.lstrip(prependstring)
-    linelst = linelst.strip()
+        dataline = dataline.lstrip(prependstring)
+    dataline = dataline.strip()
 
     if delimitter == '':
-        tokens = linelst.split()
+        tokens = dataline.split()
+        # print 'tokens', tokens
     else:
-        tokens = linelst.split(delimitter)
+        tokens = dataline.split(delimitter)
     if format == 'tuple':
         tokens = tuple(tokens)
     return (tokens, commentlist)
