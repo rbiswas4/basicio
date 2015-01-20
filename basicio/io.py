@@ -352,6 +352,7 @@ def file2recarray(file, types=None, names=None, titles=None, delimiter='',
     -------
     `np.recarray` or structured array
 
+
     Examples
     --------
     >>> fname = os.path.join(_here,'example_data/table_data.dat')
@@ -359,12 +360,15 @@ def file2recarray(file, types=None, names=None, titles=None, delimiter='',
     >>> x['f0'][0] == '6773'
     True
     >>> np.testing.assert_almost_equal(x['f1'][0], 0.089300)
-
     """
     d = file2strarray(file, buffer=buffer, delimitter=delimiter,
                       datastring=datastring)
+    if names is None and headerstring is not None:
+        names = getheaders(file, headerstring=headerstring)
     recarray = strarray2recarray(d, names=names, types=types, titles=titles)
     return recarray
+
+
 if __name__ == '__main__':
     pass
     # fname = os.path.join(_here,'example_data/table_data.dat')
