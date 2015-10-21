@@ -322,7 +322,7 @@ def builddict(fname,
             line = f.readline()
             continue    
     #while line != '':
-        tmp = tokenizeline(line, ignorestrings = ignorestrings , 
+        tmp = _tokenizeline(line, ignorestrings = ignorestrings , 
             delimstrings = dictdelim)
         
         #print line , tmp
